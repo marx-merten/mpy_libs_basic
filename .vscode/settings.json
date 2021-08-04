@@ -1,0 +1,10 @@
+{
+    "python.autoComplete.extraPaths": [
+        "pysrc/firmware",
+        "pysrc/modules",
+        "pysrc/live",
+        "pysrc/stubs",
+
+    ],
+    "python.linting.pylintEnabled": true
+}

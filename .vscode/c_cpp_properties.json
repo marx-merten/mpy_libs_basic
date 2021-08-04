@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/../../environments/esp32/espidf4_2/components/**",
+                "${workspaceFolder}/../../environments/micropython-custom/ports/esp32/build-GENERIC_OTA/",
+                "${workspaceFolder}/../../environments/micropython-custom/ports/esp32/boards/GENERIC_OTA/",
+                "${workspaceFolder}/../../environments/micropython-custom",
+                "${workspaceFolder}/../../environments/micropython-custom/ports/esp32"
+            ],
+            "defines": [],
+            "macFrameworkPath": [],
+            "compilerPath": "/usr/local/bin/gcc-10",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "macos-gcc-x64"
+        }
+    ],
+    "version": 4
+}
