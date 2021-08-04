@@ -1,0 +1,145 @@
+/Users/stefan/projekteHome/marxworld/electronics/micropython-libs/codingfragments-basic
+=====================
+Setting IDF_PATH to '/Users/stefan/projekteHome/marxworld/electronics/environments/esp32/espidf4_2'
+Adding ESP-IDF tools to PATH...
+Checking if Python packages are up to date...
+Python requirements from /Users/stefan/projekteHome/marxworld/electronics/environments/esp32/espidf4_2/requirements.txt are satisfied.
+Added the following directories to PATH:
+  /Users/stefan/projekteHome/marxworld/electronics/environments/esp32/espidf4_2/components/esptool_py/esptool
+  /Users/stefan/projekteHome/marxworld/electronics/environments/esp32/espidf4_2/components/espcoredump
+  /Users/stefan/projekteHome/marxworld/electronics/environments/esp32/espidf4_2/components/partition_table/
+  /Users/stefan/.espressif/tools/xtensa-esp32-elf/esp-2020r3-8.4.0/xtensa-esp32-elf/bin
+  /Users/stefan/.espressif/tools/esp32ulp-elf/2.28.51.20170517/esp32ulp-elf-binutils/bin
+  /Users/stefan/.espressif/tools/openocd-esp32/v0.10.0-esp32-20200709/openocd-esp32/bin
+  /Users/stefan/.espressif/python_env/idf4.0_py3.8_env/bin
+  /Users/stefan/projekteHome/marxworld/electronics/environments/esp32/espidf4_2/tools
+Done! You can now compile ESP-IDF projects.
+Go to the project directory and run:
+
+  idf.py build
+
+~/projekteHome/marxworld/electronics/environments/micropython-custom/ports/esp32 ~/projekteHome/marxworld/electronics/micropython-libs/codingfragments-basic
+building
+idf.py -D MICROPY_BOARD=GENERIC_OTA -B build-GENERIC_OTA  -DUSER_C_MODULES=/Users/stefan/projekteHome/marxworld/electronics/micropython-libs/codingfragments-basic/csrc/micropython.cmake -D MICROPY_FROZEN_MANIFEST=/Users/stefan/projekteHome/marxworld/electronics/micropython-libs/codingfragments-basic/frozenmanifest.py build
+Python requirements from /Users/stefan/projekteHome/marxworld/electronics/environments/esp32/espidf4_2/requirements.txt are satisfied.
+[  0%] Built target _project_elf_src
+Partition table binary generated. Contents:
+[  0%] Built target blank_ota_data
+[  0%] Built target esp32_linker_script
+[  1%] Built target micropy_extmod_btree
+*******************************************************************************
+[  1%] Built target __idf_app_trace
+# Espressif ESP32 Partition Table
+# Name, Type, SubType, Offset, Size, Flags
+nvs,data,nvs,0x9000,16K,
+otadata,data,ota,0xd000,8K,
+phy_init,data,phy,0xf000,4K,
+ota_0,app,ota_0,0x10000,1536K,
+ota_1,app,ota_1,0x190000,1536K,
+vfs,data,fat,0x310000,960K,
+[  1%] Built target __idf_cxx
+*******************************************************************************
+[  2%] Built target partition_table
+[  4%] Built target __idf_newlib
+[  4%] Performing build step for 'bootloader'
+[  4%] Built target __idf_vfs
+[  1%] Built target _project_elf_src
+[  4%] Built target __idf_log
+[  5%] Built target __idf_freertos
+[ 12%] Built target __idf_xtensa
+[  6%] Built target __idf_heap
+[  6%] Built target __idf_log
+[ 50%] Built target __idf_soc
+[ 53%] Built target __idf_micro-ecc
+[  8%] Built target __idf_soc
+[  8%] Built target __idf_esp_rom
+[ 79%] Built target __idf_bootloader_support
+[  9%] Built target __idf_esp_common
+[ 87%] Built target __idf_efuse
+[ 10%] Built target __idf_xtensa
+[ 90%] Built target __idf_spi_flash
+[ 93%] Built target __idf_main
+[ 12%] Built target __idf_esp32
+[ 98%] Built target bootloader.elf
+[100%] Built target gen_project_binary
+[ 13%] Built target __idf_espcoredump
+[100%] Built target app
+[ 14%] Built target __idf_pthread
+[ 14%] No install step for 'bootloader'
+[ 14%] Built target __idf_esp_event
+[ 14%] Completed 'bootloader'
+[ 14%] Built target __idf_tcpip_adapter
+[ 15%] Built target bootloader
+[ 23%] Built target __idf_lwip
+[ 24%] Built target __idf_esp_eth
+[ 24%] Built target __idf_esp_wifi
+[ 25%] Built target __idf_nvs_flash
+[ 27%] Built target __idf_spi_flash
+[ 27%] Built target __idf_app_update
+[ 28%] Built target __idf_bootloader_support
+[ 29%] Built target __idf_efuse
+[ 36%] Built target __idf_wpa_supplicant
+[ 37%] Built target mbedtls
+[ 38%] Built target mbedx509
+[ 44%] Built target mbedcrypto
+[ 46%] Built target __idf_driver
+[ 46%] Built target __idf_esp_ringbuf
+[ 46%] Built target __idf_esp_adc_cal
+[ 46%] Built target __idf_console
+[ 46%] Built target __idf_protobuf-c
+[ 46%] Built target __idf_expat
+[ 46%] Built target __idf_jsmn
+[ 48%] Built target __idf_esp_gdbstub
+[ 48%] Built target __idf_wear_levelling
+[ 48%] Built target __idf_json
+[ 50%] Built target __idf_nghttp
+[ 50%] Built target __idf_openssl
+[ 50%] Built target __idf_sdmmc
+[ 51%] Built target __idf_ulp
+[ 54%] Built target __idf_freemodbus
+[ 54%] Built target __idf_unity
+[ 54%] Built target __idf_spiffs
+[ 54%] Built target __idf_esp-tls
+[ 54%] Built target __idf_asio
+[ 54%] Built target __idf_mdns
+[ 62%] Built target __idf_esp_http_server
+[ 65%] Built target __idf_libsodium
+[ 66%] Built target __idf_fatfs
+[ 68%] Built target __idf_coap
+[ 69%] Built target __idf_tcp_transport
+[ 70%] Built target __idf_esp_http_client
+[ 70%] Built target __idf_esp_websocket_client
+[ 70%] Built target __idf_mqtt
+[ 70%] Built target __idf_esp_https_ota
+[ 78%] Built target __idf_bt
+[ 79%] Built target __idf_protocomm
+[ 79%] Built target __idf_esp_local_ctrl
+[ 80%] Built target __idf_wifi_provisioning
+-n
+[ 80%] Generating ../../genhdr/mpversion.h
+[ 80%] Generating ../../genhdr/qstrdefs.collected.h
+QSTR not updated
+[ 80%] Generating ../../frozen_content.c
+-n
+[ 80%] Generating ../../genhdr/mpversion.h
+[ 80%] Generating ../../genhdr/qstrdefs.collected.h
+QSTR not updated
+[ 80%] Generating ../../frozen_content.c
+[100%] Built target __idf_main
+[100%] Built target __ldgen_output_esp32.project.ld
+[100%] Built target micropython.elf
+[100%] Built target gen_project_binary
+[100%] Built target app
+Checking Python dependencies...
+Executing action: all (aliases: build)
+Running make in directory /Users/stefan/projekteHome/marxworld/electronics/environments/micropython-custom/ports/esp32/build-GENERIC_OTA
+Executing "make -j 14 all"...
+
+Project build complete. To flash, run this command:
+/Users/stefan/.espressif/python_env/idf4.0_py3.8_env/bin/python ../../../esp32/espidf4_2/components/esptool_py/esptool/esptool.py -p (PORT) -b 460800 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_size detect --flash_freq 40m 0x1000 build-GENERIC_OTA/bootloader/bootloader.bin 0x8000 build-GENERIC_OTA/partition_table/partition-table.bin 0xd000 build-GENERIC_OTA/ota_data_initial.bin 0x10000 build-GENERIC_OTA/micropython.bin
+or run 'idf.py -p (PORT) flash'
+bootloader  @0x001000    21184  (    7488 remaining)
+partitions  @0x008000     3072  (    1024 remaining)
+application @0x010000  1434384  (  138480 remaining)
+total                  1499920
+~/projekteHome/marxworld/electronics/micropython-libs/codingfragments-basic
