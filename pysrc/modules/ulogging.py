@@ -89,6 +89,8 @@ def debug(msg, *args):
 
 
 def basicConfig(level=INFO, filename=None, stream=None, format=None):
+    # pylint: disable=redefined-builtin
+    #
     global _level, _stream
     _level = level
     if stream:

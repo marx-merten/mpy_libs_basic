@@ -137,4 +137,3 @@ class TextIOWrapper:
 
 def open():
     pass
-

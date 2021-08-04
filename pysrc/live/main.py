@@ -1,19 +1,21 @@
 # Default Logging
-import time
 import random
+
+import utime as time
 import ulogging as logging
-import cfled
 import machine
 import utils
+
+import cfled
 
 LOG = logging.getLogger(__name__)
 LOG.info("STARTING")
 def test1(count):
     # haldebug.meminfo()
     p = machine.Pin(23)
-    f=cfled.RmtLed(pin=p,bpp=4,leds=count)
-    f.clear()
-    f.display()
+    l = cfled.RmtLed(pin=p,bpp=4,leds=count)
+    l.clear()
+    l.display()
 
     # haldebug.meminfo()
     return f
@@ -31,7 +33,7 @@ def disp(leds):
 def mass_test(leds,count,re):
     for _ in range(re):
         # time.sleep_ms(20)
-        col=(random.randint(0,255),random.randint(0,255),random.randint(0,255),random.randint(0,255));
+        col=(random.randint(0,255),random.randint(0,255),random.randint(0,255),random.randint(0,255))
         fill(leds,col,count)
         disp(leds)
 
@@ -41,6 +43,7 @@ def cycle(leds,step,count,offset):
         hue=((i*step)+offset)%255
         leds.set(i,hsv_plain=(hue,200,200))
     leds.display()
+
 f=0
 
 def fullcycle():
