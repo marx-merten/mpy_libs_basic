@@ -107,6 +107,30 @@ mp_obj_t ledmodule_rmtled_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     return mp_const_none;
 }
 
+mp_obj_t ledmodule_rmtled_restore(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
+{
+    static const mp_arg_t allowed_args[] = {
+        /* args[0] */ {MP_QSTR_self, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = mp_const_none}},
+        /* args[1] */ {MP_QSTR_leds, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = mp_const_none}},
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    ledmodule_rmtled_obj_t *self = MP_OBJ_TO_PTR(args[0].u_obj);
+
+    assert(mp_obj_is_type(args[1].u_obj, &mp_type_bytearray));
+
+    mp_obj_array_t *src = MP_OBJ_TO_PTR(args[1].u_obj);
+    mp_obj_array_t *current = ((mp_obj_array_t *)MP_OBJ_TO_PTR(self->led_buffer));
+    if (current->len == src->len)
+    {
+        memcpy(current->items, src->items, src->len);
+    }
+
+    return mp_const_none;
+}
+
 mp_obj_t ledmodule_rmtled_set(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
 {
     static const mp_arg_t allowed_args[] = {
@@ -167,6 +191,26 @@ mp_obj_t ledmodule_rmtled_set(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     }
 
     return args[0].u_obj;
+}
+
+mp_obj_t ledmodule_rmtled_resize(mp_obj_t self_in,mp_obj_t newSize)
+{
+    mp_int_t size = mp_obj_get_int(newSize);
+    ledmodule_rmtled_deinit(self_in);
+
+    ledmodule_rmtled_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    // set new Size to leds
+    self->led_count = size;
+    // create led value buffer
+    uint8_t *led_values = m_new(uint8_t, self->led_count * self->bpp);
+    self->led_buffer = mp_obj_new_bytearray_by_ref(self->led_count * self->bpp, led_values);
+
+    // old buffer is discarded by GC eventually as it's in python space
+
+
+    return mp_const_none;
+
 }
 
 mp_obj_t ledmodule_rmtled_leds(mp_obj_t self_in)
@@ -233,6 +277,7 @@ void ledmodule_rmtled_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
               self->bpp, self->led_pin, self->led_count);
 }
 
+
 mp_obj_t ledmodule_rmtled_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args)
 {
     static const mp_arg_t allowed_args[] = {
@@ -283,7 +328,11 @@ extern mp_obj_t ledmodule_rmtled_deinit(mp_obj_t self_in)
     ledmodule_rmtled_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->hal_initialized)
     {
+        // wait first-making sure we don't interrupt an ongoing transmit
+        rmt_wait_tx_done(self->hal->config.channel,200);
         rmtled_hal_deinit(*self->hal);
+        free(self->hal);
+        self->hal = NULL;
         self->hal_initialized = false;
     }
     return mp_const_none;
@@ -320,7 +369,7 @@ extern mp_obj_t ledmodule_rmtled_display(mp_obj_t self_in)
     }
 
     uint8_t *currentBuffer = ((mp_obj_array_t *)MP_OBJ_TO_PTR(self->led_buffer))->items;
-    /*uint8_t status = */rmtled_hal_send(self->hal, currentBuffer);
+    /*uint8_t status = */ rmtled_hal_send(self->hal, currentBuffer);
     self->dirty = false;
     // TODO Check Status
     return mp_const_none;
@@ -338,12 +387,13 @@ extern mp_obj_t ledmodule_rmtled_display(mp_obj_t self_in)
 MP_DEFINE_CONST_FUN_OBJ_KW(ledmodule_rmtled_fill_funcObj, 1, ledmodule_rmtled_fill);
 MP_DEFINE_CONST_FUN_OBJ_KW(ledmodule_rmtled_option_funcObj, 1, ledmodule_rmtled_options);
 MP_DEFINE_CONST_FUN_OBJ_1(ledmodule_rmtled_clear_funcObj, ledmodule_rmtled_clear);
+MP_DEFINE_CONST_FUN_OBJ_2(ledmodule_rmtled_resize_funcObj,ledmodule_rmtled_resize);
 MP_DEFINE_CONST_FUN_OBJ_1(ledmodule_rmtled_leds_funcObj, ledmodule_rmtled_leds);
 MP_DEFINE_CONST_FUN_OBJ_KW(ledmodule_rmtled_set_funcObj, 2, ledmodule_rmtled_set);
 MP_DEFINE_CONST_FUN_OBJ_1(ledmodule_rmtled_display_funcObj, ledmodule_rmtled_display);
 MP_DEFINE_CONST_FUN_OBJ_1(ledmodule_rmtled_init_funcObj, ledmodule_rmtled_init);
 MP_DEFINE_CONST_FUN_OBJ_1(ledmodule_rmtled_deinit_funcObj, ledmodule_rmtled_deinit);
-
+MP_DEFINE_CONST_FUN_OBJ_KW(ledmodule_rmtled_restore_funcObj, 2, ledmodule_rmtled_restore);
 // ---- local class members
 STATIC const mp_rom_map_elem_t ledmodule_rmtled_locals_dict_table[] = {
     // {MP_ROM_QSTR(MP_QSTR_inc), MP_ROM_PTR(&mymodule_hello_increment_obj)},
@@ -367,8 +417,9 @@ STATIC const mp_rom_map_elem_t ledmodule_rmtled_locals_dict_table[] = {
     {MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&ledmodule_rmtled_init_funcObj)},
     {MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&ledmodule_rmtled_deinit_funcObj)},
     {MP_ROM_QSTR(MP_QSTR_options), MP_ROM_PTR(&ledmodule_rmtled_option_funcObj)},
-
-    {MP_ROM_QSTR(MP_QSTR_leds), MP_ROM_PTR(&ledmodule_rmtled_leds_funcObj)},
+    {MP_ROM_QSTR(MP_QSTR_restore), MP_ROM_PTR(&ledmodule_rmtled_restore_funcObj)},
+    {MP_ROM_QSTR(MP_QSTR_resize), MP_ROM_PTR(&ledmodule_rmtled_resize_funcObj)},
+    {MP_ROM_QSTR(MP_QSTR_backup), MP_ROM_PTR(&ledmodule_rmtled_leds_funcObj)},
 
 };
 

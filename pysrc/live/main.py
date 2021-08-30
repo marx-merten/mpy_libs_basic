@@ -18,7 +18,7 @@ def test1(count):
     l.display()
 
     # haldebug.meminfo()
-    return f
+    return l
 
 @utils.timed_function
 def fill(leds,value,count):
@@ -46,11 +46,9 @@ def cycle(leds,step,count,offset):
 
 f=0
 
-def fullcycle():
-    global f
-    f=test1(100)
+def fullcycle(leds):
     for i in range (1000):
-        cycle(f,10,100,i*10)
+        cycle(leds,10,len(leds),i*10)
 
 
 def scroll(leds,step):

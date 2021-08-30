@@ -51,7 +51,9 @@ extern const mp_obj_type_t ledmodule_rmtledType;
 extern mp_obj_t ledmodule_rmtled_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 extern void ledmodule_rmtled_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 extern mp_obj_t ledmodule_rmtled_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+extern mp_obj_t ledmodule_rmtled_restore(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 extern mp_obj_t ledmodule_rmtled_clear(mp_obj_t self_in);
+extern mp_obj_t ledmodule_rmtled_resize(mp_obj_t self_in,mp_obj_t newSize);
 
 extern mp_obj_t ledmodule_rmtled_set(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 extern mp_obj_t ledmodule_rmtled_leds(mp_obj_t self_in);
