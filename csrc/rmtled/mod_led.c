@@ -180,6 +180,11 @@ mp_obj_t ledmodule_rmtled_set(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         ledpixel_CRGB_t rgb = {};
         ledpixel_CHSV_t hsv = {};
         ledmodule_rmtled_mpy_convertToHSV(args[6].u_obj, &hsv);
+        if (self->useRainbow){
+            ledmodule_rmtled_color_hsv_rainbow(hsv, &rgb);
+        }else{
+            ledmodule_rmtled_color_hsv_plain (hsv, &rgb);
+        }
         ledmodule_rmtled_storePixelRGB(self, led, rgb);
     }
 
