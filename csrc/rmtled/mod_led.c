@@ -76,13 +76,25 @@ mp_obj_t ledmodule_rmtled_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
         ledpixel_CRGB_t rgb = {};
         ledmodule_rmtled_mpy_convertToRGB(args[1].u_obj, &rgb);
-        //TODO: Proper change to rgbw if enabled, will require a config value in the module
-        cols[0] = rgb.raw[0];
-        cols[1] = rgb.raw[1];
-        cols[2] = rgb.raw[2];
-        if (self->bpp == RMT_LED_BPP_4)
+
+        if (self->autoconvertToRGBW && self->bpp == 4)
         {
-            cols[3] = 0;
+            ledpixel_CRGBW_t rgbw;
+            ledmodule_rmtled_color_convert_rgb_to_rgbw(rgb, &rgbw);
+            cols[0] = rgbw.raw[0];
+            cols[1] = rgbw.raw[1];
+            cols[2] = rgbw.raw[2];
+            cols[3] = rgbw.raw[3];
+        }
+        else
+        {
+            cols[0] = rgb.raw[0];
+            cols[1] = rgb.raw[1];
+            cols[2] = rgb.raw[2];
+            if (self->bpp == RMT_LED_BPP_4)
+            {
+                cols[3] = 0;
+            }
         }
     }
 
@@ -180,10 +192,13 @@ mp_obj_t ledmodule_rmtled_set(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         ledpixel_CRGB_t rgb = {};
         ledpixel_CHSV_t hsv = {};
         ledmodule_rmtled_mpy_convertToHSV(args[6].u_obj, &hsv);
-        if (self->useRainbow){
+        if (self->useRainbow)
+        {
             ledmodule_rmtled_color_hsv_rainbow(hsv, &rgb);
-        }else{
-            ledmodule_rmtled_color_hsv_plain (hsv, &rgb);
+        }
+        else
+        {
+            ledmodule_rmtled_color_hsv_plain(hsv, &rgb);
         }
         ledmodule_rmtled_storePixelRGB(self, led, rgb);
     }
@@ -198,7 +213,7 @@ mp_obj_t ledmodule_rmtled_set(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     return args[0].u_obj;
 }
 
-mp_obj_t ledmodule_rmtled_resize(mp_obj_t self_in,mp_obj_t newSize)
+mp_obj_t ledmodule_rmtled_resize(mp_obj_t self_in, mp_obj_t newSize)
 {
     mp_int_t size = mp_obj_get_int(newSize);
     ledmodule_rmtled_deinit(self_in);
@@ -213,9 +228,7 @@ mp_obj_t ledmodule_rmtled_resize(mp_obj_t self_in,mp_obj_t newSize)
 
     // old buffer is discarded by GC eventually as it's in python space
 
-
     return mp_const_none;
-
 }
 
 mp_obj_t ledmodule_rmtled_leds(mp_obj_t self_in)
@@ -282,7 +295,6 @@ void ledmodule_rmtled_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
               self->bpp, self->led_pin, self->led_count);
 }
 
-
 mp_obj_t ledmodule_rmtled_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args)
 {
     static const mp_arg_t allowed_args[] = {
@@ -334,7 +346,7 @@ extern mp_obj_t ledmodule_rmtled_deinit(mp_obj_t self_in)
     if (self->hal_initialized)
     {
         // wait first-making sure we don't interrupt an ongoing transmit
-        rmt_wait_tx_done(self->hal->config.channel,200);
+        rmt_wait_tx_done(self->hal->config.channel, 200);
         rmtled_hal_deinit(*self->hal);
         free(self->hal);
         self->hal = NULL;
@@ -392,7 +404,7 @@ extern mp_obj_t ledmodule_rmtled_display(mp_obj_t self_in)
 MP_DEFINE_CONST_FUN_OBJ_KW(ledmodule_rmtled_fill_funcObj, 1, ledmodule_rmtled_fill);
 MP_DEFINE_CONST_FUN_OBJ_KW(ledmodule_rmtled_option_funcObj, 1, ledmodule_rmtled_options);
 MP_DEFINE_CONST_FUN_OBJ_1(ledmodule_rmtled_clear_funcObj, ledmodule_rmtled_clear);
-MP_DEFINE_CONST_FUN_OBJ_2(ledmodule_rmtled_resize_funcObj,ledmodule_rmtled_resize);
+MP_DEFINE_CONST_FUN_OBJ_2(ledmodule_rmtled_resize_funcObj, ledmodule_rmtled_resize);
 MP_DEFINE_CONST_FUN_OBJ_1(ledmodule_rmtled_leds_funcObj, ledmodule_rmtled_leds);
 MP_DEFINE_CONST_FUN_OBJ_KW(ledmodule_rmtled_set_funcObj, 2, ledmodule_rmtled_set);
 MP_DEFINE_CONST_FUN_OBJ_1(ledmodule_rmtled_display_funcObj, ledmodule_rmtled_display);
