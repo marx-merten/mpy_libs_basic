@@ -96,6 +96,8 @@ extern rmtled_hal_t *rmtled_hal_init(const uint8_t bpp, const uint16_t ledcount,
     // TODO Fix this IF support for multiple channels with mixing timings is required !!
     rmtled_static_context = hal->context;
 
+    hal->hal_buffer = malloc(sizeof(rmt_item32_t)*hal->led_count*hal->bpp*8);
+
 
 
     rmt_translator_init(channel,rmtled_hal_transform_cb);
@@ -108,6 +110,7 @@ extern rmtled_hal_t *rmtled_hal_init(const uint8_t bpp, const uint16_t ledcount,
 
 extern void rmtled_hal_deinit(const rmtled_hal_t hal)
 {
+    free(hal.hal_buffer);
     check_esp_err(rmt_driver_uninstall(hal.channel));
 }
 
@@ -115,6 +118,12 @@ extern uint8_t rmtled_hal_send(rmtled_hal_t *hal, uint8_t *led_buffer)
 {
     // let's make sure the previous run is done
     rmt_wait_tx_done(hal->config.channel,200);
-    rmt_write_sample(hal->config.channel,led_buffer , hal->led_count * hal->bpp,false);
+
+    // fill HAL Buffer
+
+    size_t translated,translatedItems;
+    rmtled_hal_transform_cb(led_buffer,hal->hal_buffer,hal->led_count * hal->bpp,hal->led_count * hal->bpp*8,&translated,&translatedItems);
+    rmt_write_items(hal->config.channel,hal->hal_buffer,hal->led_count*hal->bpp*8,false);
+    // rmt_write_sample(hal->config.channel,led_buffer , hal->led_count * hal->bpp,false);
     return RMTLED_STATUS_OK;
 }
