@@ -5,6 +5,7 @@
 #include "py/mphal.h"
 #include "py/objarray.h"
 #include "./led/rmt_hal.h"
+#include "freertos/queue.h"
 
 // Defines a basic LED Module using advanced timing on esp32 and esp32 only !!!
 // IMPORTANT, currently it only supports 1 Instance at any given time, this one needs to be canceled OR it will
@@ -323,6 +324,7 @@ mp_obj_t ledmodule_rmtled_make_new(const mp_obj_type_t *type, size_t n_args, siz
     self->hal_initialized = false;
     self->useRainbow = false; // use rainbow conversion by default !!!
     self->autoconvertToRGBW = true;
+    self->loopCore = 1;
 
     // TODO, Make sure this is configurable
     self->byteorder = malloc(4);
@@ -340,14 +342,70 @@ mp_obj_t ledmodule_rmtled_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(self);
 }
 
+static void ledmodule_task_hal(void *module)
+{
+    ledmodule_rmtled_obj_t *self = module;
+    ledmodule_rmtled_loopmsg_t queueMsg;
+
+    for (;;)
+    {
+        if (xQueueReceive(self->loopQueue, &(queueMsg), pdMS_TO_TICKS(5000)))
+        {
+            switch (queueMsg.type)
+            {
+            case INIT:;
+                rmtled_hal_t *hal = rmtled_hal_init(self->bpp, self->led_count, self->led_pin, self->channel, LEDMODULE_TIMINGS_WS2812B);
+                self->hal = hal;
+                self->hal_initialized = true;
+                LED_SEND_CMD(self->loopReturnQueue, DONE, 500);
+                break;
+            case DEINIT:
+                // wait first-making sure we don't interrupt an ongoing transmit
+                rmt_wait_tx_done(self->hal->config.channel, 200);
+                rmtled_hal_deinit(*self->hal);
+                LED_SEND_CMD(self->loopReturnQueue, DONE, 500);
+                break;
+            case DISPLAY:;
+                uint8_t *currentBuffer = ((mp_obj_array_t *)MP_OBJ_TO_PTR(self->led_buffer))->items;
+                rmtled_hal_send(self->hal, currentBuffer);
+                LED_SEND_CMD(self->loopReturnQueue, DONE, 500);
+                break;
+            case MSG:
+                printf("%s\n", queueMsg.msg);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+}
+
+extern mp_obj_t ttt_testcore(mp_obj_t self_in)
+{
+    printf("Running task 1\n");
+    printf("Hello world from core: %d!\n", xPortGetCoreID());
+    ledmodule_rmtled_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    LED_SEND_MSG(self->loopQueue, "NOPE", 1000);
+    return mp_const_none;
+}
 extern mp_obj_t ledmodule_rmtled_deinit(mp_obj_t self_in)
 {
     ledmodule_rmtled_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->hal_initialized)
     {
-        // wait first-making sure we don't interrupt an ongoing transmit
-        rmt_wait_tx_done(self->hal->config.channel, 200);
-        rmtled_hal_deinit(*self->hal);
+
+        LED_SEND_CMD(self->loopQueue, DEINIT, 1000);
+        ledmodule_rmtled_loopmsg_t receive;
+        xQueueReceive(self->loopReturnQueue, &receive, pdMS_TO_TICKS(500));
+        if (receive.type != DONE)
+        {
+            // add some security Delay
+            vTaskDelay(pdMS_TO_TICKS(500));
+        }
+
+        vTaskDelete(self->loopHandle);
+        vQueueDelete(self->loopQueue);
+        vQueueDelete(self->loopReturnQueue);
         free(self->hal);
         self->hal = NULL;
         self->hal_initialized = false;
@@ -360,33 +418,42 @@ extern mp_obj_t ledmodule_rmtled_init(mp_obj_t self_in)
     ledmodule_rmtled_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (!self->hal_initialized)
     {
-        rmtled_hal_t *hal = rmtled_hal_init(self->bpp, self->led_count, self->led_pin, self->channel, LEDMODULE_TIMINGS_WS2812B);
-        if (hal == NULL)
+        // Start Background Loop
+        // ----------------------
+        self->loopQueue = xQueueCreate(5, sizeof(ledmodule_rmtled_loopmsg_t));
+        self->loopReturnQueue = xQueueCreate(5, sizeof(ledmodule_rmtled_loopmsg_t));
+        xTaskCreatePinnedToCore(ledmodule_task_hal, "isr_task", 2048, MP_OBJ_TO_PTR(self_in), 5, &self->loopHandle, self->loopCore);
+
+        LED_SEND_CMD(self->loopQueue, INIT, 1000);
+        ledmodule_rmtled_loopmsg_t receive;
+
+        xQueueReceive(self->loopReturnQueue, &receive, pdMS_TO_TICKS(500));
+        if (receive.type != DONE)
+        {
+            // add some security Delay
+            vTaskDelay(pdMS_TO_TICKS(500));
+        }
+
+        if (self->hal == NULL)
         {
             mp_raise_msg(&mp_type_Exception, "unable to initialize RMT-HAL Layer");
+            self->hal_initialized = false;
         }
-        self->hal = hal;
-        self->hal_initialized = true;
     }
     return mp_const_none;
 }
 
 extern mp_obj_t ledmodule_rmtled_display(mp_obj_t self_in)
 {
-    ledmodule_rmtled_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (!self->hal_initialized)
-    {
-        rmtled_hal_t *hal = rmtled_hal_init(self->bpp, self->led_count, self->led_pin, self->channel, LEDMODULE_TIMINGS_WS2812B);
-        if (hal == NULL)
-        {
-            mp_raise_msg(&mp_type_Exception, "unable to initialize RMT-HAL Layer");
-        }
-        self->hal = hal;
-        self->hal_initialized = true;
-    }
+    // INIT if needed
+    ledmodule_rmtled_init(self_in);
 
-    uint8_t *currentBuffer = ((mp_obj_array_t *)MP_OBJ_TO_PTR(self->led_buffer))->items;
-    /*uint8_t status = */ rmtled_hal_send(self->hal, currentBuffer);
+    ledmodule_rmtled_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    LED_SEND_CMD(self->loopQueue, DISPLAY, 1000);
+    ledmodule_rmtled_loopmsg_t receive;
+    xQueueReceive(self->loopReturnQueue, &receive, pdMS_TO_TICKS(500));
+
     self->dirty = false;
     // TODO Check Status
     return mp_const_none;
@@ -410,6 +477,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(ledmodule_rmtled_set_funcObj, 2, ledmodule_rmtled_set
 MP_DEFINE_CONST_FUN_OBJ_1(ledmodule_rmtled_display_funcObj, ledmodule_rmtled_display);
 MP_DEFINE_CONST_FUN_OBJ_1(ledmodule_rmtled_init_funcObj, ledmodule_rmtled_init);
 MP_DEFINE_CONST_FUN_OBJ_1(ledmodule_rmtled_deinit_funcObj, ledmodule_rmtled_deinit);
+MP_DEFINE_CONST_FUN_OBJ_1(ledmodule_rmtled_test_funcObj, ttt_testcore);
 MP_DEFINE_CONST_FUN_OBJ_KW(ledmodule_rmtled_restore_funcObj, 2, ledmodule_rmtled_restore);
 // ---- local class members
 STATIC const mp_rom_map_elem_t ledmodule_rmtled_locals_dict_table[] = {
@@ -437,6 +505,7 @@ STATIC const mp_rom_map_elem_t ledmodule_rmtled_locals_dict_table[] = {
     {MP_ROM_QSTR(MP_QSTR_restore), MP_ROM_PTR(&ledmodule_rmtled_restore_funcObj)},
     {MP_ROM_QSTR(MP_QSTR_resize), MP_ROM_PTR(&ledmodule_rmtled_resize_funcObj)},
     {MP_ROM_QSTR(MP_QSTR_backup), MP_ROM_PTR(&ledmodule_rmtled_leds_funcObj)},
+    {MP_ROM_QSTR(MP_QSTR_coretest), MP_ROM_PTR(&ledmodule_rmtled_test_funcObj)},
 
 };
 
