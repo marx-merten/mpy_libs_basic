@@ -5,6 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/../../environments/esp32/espidf4_2/components/**",
+                "${workspaceFolder}/../../environments/esp32/espidf4_2/components/freertos/include/",
                 "${workspaceFolder}/../../environments/micropython-custom/ports/esp32/build-GENERIC_OTA/",
                 "${workspaceFolder}/../../environments/micropython-custom/ports/esp32/boards/GENERIC_OTA/",
                 "${workspaceFolder}/../../environments/micropython-custom",

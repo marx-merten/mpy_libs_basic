@@ -18,6 +18,25 @@
 // -----------------------------
 // UPython Usermod Boilerplate
 // -----------------------------
+typedef enum
+{
+    INIT,
+    DEINIT,
+    DISPLAY,
+    MSG,
+    DONE,
+    ERROR
+} ledmodule_rmtled_msgtype_t;
+
+#define LED_SEND_MSG(_QUEUE,_MSG,_DELAY_MS) xQueueSend(_QUEUE,&((ledmodule_rmtled_loopmsg_t){.type=MSG, .msg=_MSG}), pdMS_TO_TICKS(_DELAY_MS))
+#define LED_SEND_CMD_MSG(_QUEUE,_CMD,_MSG,_DELAY_MS) xQueueSend(_QUEUE,&((ledmodule_rmtled_loopmsg_t){.type=_CMD, .msg=_MSG}), pdMS_TO_TICKS(_DELAY_MS))
+#define LED_SEND_CMD(_QUEUE,_CMD,_DELAY_MS) xQueueSend(_QUEUE,&((ledmodule_rmtled_loopmsg_t){.type=_CMD}), pdMS_TO_TICKS(_DELAY_MS))
+
+typedef struct _ledmodule_rmtled_loopmsg_t{
+    ledmodule_rmtled_msgtype_t type;
+    char msg[40];
+
+}ledmodule_rmtled_loopmsg_t;
 
 // Python TYPE Structure
 // used to announce internal fields and share with python classes
@@ -36,6 +55,10 @@ typedef struct _ledmodule_rmtled_obj_t
     bool autoconvertToRGBW;
     uint8_t *byteorder;
     rmt_channel_t channel;
+    TaskHandle_t loopHandle;
+    QueueHandle_t loopQueue;
+    QueueHandle_t loopReturnQueue;
+    uint8_t loopCore;
 
 } ledmodule_rmtled_obj_t;
 
