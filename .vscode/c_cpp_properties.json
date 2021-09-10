@@ -5,8 +5,21 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/../../environments/esp32/espidf4_2/components/**",
+
+                "${workspaceFolder}/../../environments/esp32/espidf4_2/components/soc/include",
+                "${workspaceFolder}/../../environments/esp32/espidf4_2/components/esp_ringbuf/include",
+                "${workspaceFolder}/../../environments/esp32/espidf4_2/components/heap/include",
+                "${workspaceFolder}/../../environments/esp32/espidf4_2/components/soc/esp32/include",
+                "${workspaceFolder}/../../environments/esp32/espidf4_2/components/esp32/include/",
+                "${workspaceFolder}/../../environments/esp32/espidf4_2/components/esp_rom/include/",
+                "${workspaceFolder}/../../environments/esp32/espidf4_2/components/newlib/include/",
+                "${workspaceFolder}/../../environments/esp32/espidf4_2/components/esp_common/include/",
+                "${workspaceFolder}/../../environments/esp32/espidf4_2/components/driver/include/",
                 "${workspaceFolder}/../../environments/esp32/espidf4_2/components/freertos/include/",
+                "${workspaceFolder}/../../environments/esp32/espidf4_2/components/xtensa/include/",
+                "${workspaceFolder}/../../environments/esp32/espidf4_2/components/xtensa/esp32/include/",
                 "${workspaceFolder}/../../environments/micropython-custom/ports/esp32/build-GENERIC_OTA/",
+                "${workspaceFolder}/../../environments//micropython-custom/ports/esp32/build-GENERIC_OTA/config/",
                 "${workspaceFolder}/../../environments/micropython-custom/ports/esp32/boards/GENERIC_OTA/",
                 "${workspaceFolder}/../../environments/micropython-custom",
                 "${workspaceFolder}/../../environments/micropython-custom/ports/esp32"
