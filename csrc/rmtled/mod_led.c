@@ -511,14 +511,24 @@ STATIC const mp_rom_map_elem_t ledmodule_rmtled_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ledmodule_rmtled_locals_dict, ledmodule_rmtled_locals_dict_table);
 
-// create the class-object itself
-const mp_obj_type_t ledmodule_rmtledType =
-    {
-        {&mp_type_type},                 // "inherit" the type "type"
-        .name = MP_QSTR_RmtLed,          // give it a name
-        .print = ledmodule_rmtled_print, // give it a print-function
-        .unary_op = ledmodule_rmtled_unary_op,
-        .binary_op = ledmodule_rmtled_binary_op,
-        .make_new = ledmodule_rmtled_make_new,                         // give it a constructor
-        .locals_dict = (mp_obj_dict_t *)&ledmodule_rmtled_locals_dict, // and the local members
-};
+// // create the class-object itself
+// const mp_obj_type_t ledmodule_rmtledType =
+//     {
+//         {&mp_type_type},                 // "inherit" the type "type"
+//         .name = MP_QSTR_RmtLed,          // give it a name
+//         .print = ledmodule_rmtled_print, // give it a print-function
+//         .unary_op = ledmodule_rmtled_unary_op,
+//         .binary_op = ledmodule_rmtled_binary_op,
+//         .make_new = ledmodule_rmtled_make_new,                         // give it a constructor
+//         .locals_dict = (mp_obj_dict_t *)&ledmodule_rmtled_locals_dict, // and the local members
+// };
+
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    ledmodule_rmtledType,
+    MP_QSTR_RmtLed,
+    MP_TYPE_FLAG_NONE,
+    make_new, ledmodule_rmtled_make_new,
+    print, ledmodule_rmtled_print,
+    locals_dict, &ledmodule_rmtled_locals_dict
+    );

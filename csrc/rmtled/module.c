@@ -14,4 +14,4 @@ const mp_obj_module_t cfleds_user_cmodule = {
     .globals = (mp_obj_dict_t *)&cfleds_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_cfled, cfleds_user_cmodule, 1);
+MP_REGISTER_MODULE(MP_QSTR_cfled, cfleds_user_cmodule);
